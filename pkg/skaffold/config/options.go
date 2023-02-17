@@ -48,6 +48,7 @@ type SkaffoldOptions struct {
 	ForceLoadImages             bool
 	IterativeStatusCheck        bool
 	FastFailStatusCheck         bool
+	KeepRunningOnFailure        bool
 	TolerateFailuresStatusCheck bool
 	Notification                bool
 	NoPrune                     bool
@@ -108,6 +109,7 @@ type SkaffoldOptions struct {
 	DefaultRepo                 StringOrUndefined
 	SyncRemoteCache             SyncRemoteCacheOption
 	WaitForDeletions            WaitForDeletions
+	ManifestsOverrides          []string
 }
 
 type RunMode string

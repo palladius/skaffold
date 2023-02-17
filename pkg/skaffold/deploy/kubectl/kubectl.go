@@ -86,10 +86,8 @@ type Deployer struct {
 // with the needed configuration for `kubectl apply`
 func NewDeployer(cfg Config, labeller *label.DefaultLabeller, d *latest.KubectlDeploy, artifacts []*latest.Artifact, configName string) (*Deployer, error) {
 	defaultNamespace := ""
-	b, err := (&util.Commander{}).RunCmdOut(context.Background(), exec.Command("kubectl", "config", "view", "--minify", "-o", "jsonpath='{..namespace}'"))
-	if err != nil {
-		olog.Entry(context.Background()).Warn("unable to get the kubectl context's namespace - deploy might not work properly!")
-	} else {
+	b, err := util.RunCmdOutOnce(context.TODO(), exec.Command("kubectl", "config", "view", "--minify", "-o", "jsonpath='{..namespace}'"))
+	if err == nil {
 		defaultNamespace = strings.Trim(string(b), "'")
 		if defaultNamespace == "default" {
 			defaultNamespace = ""
@@ -118,7 +116,8 @@ func NewDeployer(cfg Config, labeller *label.DefaultLabeller, d *latest.KubectlD
 	var ogImages []graph.Artifact
 	for _, artifact := range artifacts {
 		ogImages = append(ogImages, graph.Artifact{
-			ImageName: artifact.ImageName,
+			ImageName:   artifact.ImageName,
+			RuntimeType: artifact.RuntimeType,
 		})
 	}
 
@@ -197,7 +196,7 @@ func (k *Deployer) Deploy(ctx context.Context, out io.Writer, builds []graph.Art
 	var (
 		err      error
 		childCtx context.Context
-		endTrace func(...trace.SpanOption)
+		endTrace func(...trace.SpanEndOption)
 	)
 	instrumentation.AddAttributesToCurrentSpanFromContext(ctx, map[string]string{
 		"DeployerType": "kubectl",

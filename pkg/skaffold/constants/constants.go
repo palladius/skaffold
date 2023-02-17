@@ -57,6 +57,9 @@ const (
 	DefaultCacheFile   = "cache"
 	DefaultMetricFile  = "metrics"
 
+	// SkaffoldEnvFile is the file that is parsed to set environment variables in the process
+	SkaffoldEnvFile = "skaffold.env"
+
 	DefaultPortForwardAddress = "127.0.0.1"
 
 	DefaultProjectDescriptor = "project.toml"
@@ -128,6 +131,8 @@ var (
 	AllowedUserPattern = `^%v(\/.+)?$`
 
 	KustomizeFilePaths = []string{"kustomization.yaml", "kustomization.yml", "Kustomization"}
+
+	DefaultKanikoDigestFile = "/dev/termination-log"
 )
 
 var ImageRef = struct {

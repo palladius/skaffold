@@ -112,12 +112,12 @@ The `setValues` configuration binds a Helm key to the specified value. The `setV
 | `{{.IMAGE_REPO_NO_DOMAIN_<artifact-name>}}` | `example-repo` |
 
 ### Sanitizing the artifact name from invalid go template characters
-The `<artifact-name>` (eg: `{{.IMAGE_FULLY_QUALIFIED_<artifact-name>}}`) when used with `setValueTemplates` cannot have `/` or `-` characters.  If you have an artifact name with these characters (eg: `localhost/nginx` or `gcr.io/foo-image/foo`), change them to use `_` in place of these characters in the `setValueTemplates` field
+The `<artifact-name>` (eg: `{{.IMAGE_FULLY_QUALIFIED_<artifact-name>}}`) when used with `setValueTemplates` cannot have `/`, `-`, or `.` characters.  If you have an artifact name with these characters (eg: `localhost/nginx` or `gcr.io/foo-image/foo`), change them to use `_` in place of these characters in the `setValueTemplates` field
 
 | Artifact name | Sanitized Name |
 | --------------- | --------------- |
 | `localhost/nginx` | `localhost_nginx`|
-| `gcr.io/example-repo/myImage` | `gcr.io_example_repo_myImage` |
+| `gcr.io/example-repo/myImage` | `gcr_io_example_repo_myImage` |
 
 Example
 ```yaml
@@ -200,9 +200,9 @@ deploy:
         chartPath: helm
         setValueTemplates:
           image.repository: "{{.IMAGE_REPO_myFirstImage}}"
-          image.tag: "{{.IMAGE_TAG_myFirstImage}}"
+          image.tag: "{{.IMAGE_TAG_myFirstImage}}@{{.IMAGE_DIGEST_myFirstImage}}"
           image2.repository: "{{.IMAGE_REPO_mySecondImage}}"
-          image2.tag: "{{.IMAGE_TAG_mySecondImage}}"
+          image2.tag: "{{.IMAGE_TAG_mySecondImage}}@{{.IMAGE_DIGEST_mySecondImage}}"
 ```
 
 The `values.yaml` (note that Skaffold overrides these values):
@@ -248,10 +248,10 @@ deploy:
         setValueTemplates:
           image.registry: "{{.IMAGE_DOMAIN_myFirstImage}}"
           image.repository: "{{.IMAGE_REPO_NO_DOMAIN_myFirstImage}}"
-          image.tag: "{{.IMAGE_TAG_myFirstImage}}"
+          image.tag: "{{.IMAGE_TAG_myFirstImage}}@{{.IMAGE_DIGEST_myFirstImage}}"
           image2.registry: "{{.IMAGE_DOMAIN_mySecondImage}}"
           image2.repository: "{{.IMAGE_REPO_NO_DOMAIN_mySecondImage}}"
-          image2.tag: "{{.IMAGE_TAG_mySecondImage}}"
+          image2.tag: "{{.IMAGE_TAG_mySecondImage}}@{{.IMAGE_DIGEST_mySecondImage}}"
 ```
 
 The `values.yaml` (note that Skaffold overrides these values):

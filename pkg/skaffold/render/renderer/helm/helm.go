@@ -51,6 +51,7 @@ type Helm struct {
 	enableDebug       bool
 	overrideProtocols []string
 
+	manifestOverrides  map[string]string
 	transformAllowlist map[apimachinery.GroupKind]latest.ResourceFilter
 	transformDenylist  map[apimachinery.GroupKind]latest.ResourceFilter
 }
@@ -63,7 +64,7 @@ func (h Helm) KubeConfig() string          { return h.kubeConfig }
 func (h Helm) Labels() map[string]string   { return h.labels }
 func (h Helm) GlobalFlags() []string       { return h.config.Flags.Global }
 
-func New(cfg render.Config, rCfg latest.RenderConfig, labels map[string]string, configName string) (Helm, error) {
+func New(cfg render.Config, rCfg latest.RenderConfig, labels map[string]string, configName string, manifestOverrides map[string]string) (Helm, error) {
 	generator := generate.NewGenerator(cfg.GetWorkingDir(), rCfg.Generate, "")
 	transformAllowlist, transformDenylist, err := util.ConsolidateTransformConfiguration(cfg)
 	if err != nil {
@@ -80,7 +81,8 @@ func New(cfg render.Config, rCfg latest.RenderConfig, labels map[string]string, 
 		kubeContext:       cfg.GetKubeContext(),
 		kubeConfig:        cfg.GetKubeConfig(),
 		labels:            labels,
-		namespace:         cfg.GetNamespace(),
+		namespace:         cfg.GetKubeNamespace(),
+		manifestOverrides: manifestOverrides,
 
 		transformAllowlist: transformAllowlist,
 		transformDenylist:  transformDenylist,
@@ -129,7 +131,7 @@ func (h Helm) generateHelmManifests(ctx context.Context, builds []graph.Artifact
 			args = append(args, "--version", release.Version)
 		}
 
-		args, err = helm.ConstructOverrideArgs(&release, builds, args)
+		args, err = helm.ConstructOverrideArgs(&release, builds, args, h.manifestOverrides)
 		if err != nil {
 			return nil, helm.UserErr("construct override args", err)
 		}
@@ -161,7 +163,7 @@ func (h Helm) generateHelmManifests(ctx context.Context, builds []graph.Artifact
 		errorMsg := errBuffer.String()
 
 		if len(errorMsg) > 0 {
-			log.Entry(ctx).Errorf(errorMsg)
+			log.Entry(ctx).Infof(errorMsg)
 		}
 
 		if err != nil {
